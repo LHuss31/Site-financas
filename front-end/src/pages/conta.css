@@ -1,0 +1,108 @@
+body {
+    background-color: #121212; /* Fundo escuro */
+    font-family: Arial, sans-serif; /* Fonte padrão */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Centraliza verticalmente */
+    color: #e0e0e0; /* Texto claro */
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px; /* Limita a largura máxima */
+    background-color: #1e1e1e; /* Fundo escuro para o container */
+    border-radius: 15px; /* Bordas arredondadas */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Sombra mais forte */
+    padding: 20px;
+}
+
+.Header {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.Header h1 {
+    font-size: 2rem;
+    color: #ffffff; /* Texto branco */
+}
+
+.Login-container {
+    justify-content: center;
+    display: flex;
+    gap: 50px; /* Espaçamento menor entre as caixas */
+    width: 100%;
+    margin-top: 20px;
+}
+
+.criar_conta, .login {
+    width: 35%; /* Reduz a largura */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px; /* Mais espaço interno */
+    background-color: #2a2a2a; /* Fundo mais claro que o container */
+    border-radius: 15px; /* Bordas arredondadas */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Sombra mais forte */
+}
+
+.criar_conta h2, .login h2 {
+    margin-bottom: 20px;
+    color: #ffffff; /* Texto branco */
+}
+
+.criar_conta form, .login form {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 15px; /* Espaçamento maior entre os campos */
+}
+
+input[type="text"], input[type="password"], input[type="email"] {
+    width: 100%;
+    padding: 12px; /* Altura maior */
+    border: 1px solid #444444; /* Borda cinza escura */
+    border-radius: 10px; /* Bordas arredondadas */
+    font-size: 1rem;
+    background-color: #333333; /* Fundo escuro */
+    color: #e0e0e0; /* Texto claro */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5); /* Sombra interna */
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus {
+    border-color: #1e90ff; /* Borda azul ao focar */
+    outline: none;
+}
+
+button {
+    width: 100%;
+    padding: 12px; /* Altura maior */
+    background-color: #1e90ff; /* Azul vibrante */
+    color: #ffffff; /* Texto branco */
+    border: none;
+    border-radius: 10px; /* Bordas arredondadas */
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #1c7ed6; /* Azul mais escuro ao passar o mouse */
+}
+
+button:active {
+    background-color: #1864ab; /* Azul ainda mais escuro ao clicar */
+}
+
+button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.5); /* Destaque ao focar */
+}
