@@ -63,6 +63,13 @@ function Homepage() {
         navigate('/perfil');
     };
 
+    const handleExcluirCategoria = (nomeCategoria) => {
+        const confirmacao = window.confirm(`Tem certeza que deseja excluir a categoria "${nomeCategoria}"?`);
+        if (confirmacao) {
+            setCategorias(categorias.filter((categoria) => categoria.nome !== nomeCategoria));
+        }
+    };
+
     // Dados do gráfico de pizza
     const data = {
         labels: categorias.map((categoria) => categoria.nome),
@@ -94,6 +101,14 @@ function Homepage() {
                     <h2>Dias para receber o pagamento: {diasParaPagamento}</h2> {/* Exibe os dias restantes */}
                     <button type="button" onClick={handleOpenModal}>
                         Adicionar categoria
+                    </button>
+                    <button type="button" onClick={() => {
+                        const nomeCategoria = prompt('Digite o nome da categoria que deseja excluir:');
+                        if (nomeCategoria) {
+                            handleExcluirCategoria(nomeCategoria);
+                        }
+                    }}>
+                        Excluir categoria
                     </button>
                 </div>
 
