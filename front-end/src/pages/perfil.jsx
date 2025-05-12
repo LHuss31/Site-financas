@@ -7,13 +7,17 @@ function Perfil() {
     const [formData, setFormData] = useState({}); // Estado para armazenar os dados do formulário
     const navigate = useNavigate();
 
-    // Função para buscar os dados do usuário
     useEffect(() => {
-        fetch('/api/usuario') // Substitua pela URL da sua API
+        const token = localStorage.getItem('token');
+        fetch('/api/auth/me', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        })
             .then((response) => response.json())
             .then((data) => {
                 setUsuario(data);
-                setFormData(data); // Inicializa o formulário com os dados do usuário
+                setFormData(data);
             })
             .catch((error) => console.error('Erro ao buscar os dados do usuário:', error));
     }, []);
@@ -25,17 +29,19 @@ function Perfil() {
 
     // Função para salvar as alterações
     const handleSalvar = () => {
-        fetch('/api/usuario', {
-            method: 'PUT', // Método HTTP para atualizar os dados
+        const token = localStorage.getItem('token');
+        fetch('/api/auth/editar', {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify(formData), // Envia os dados atualizados
+            body: JSON.stringify(formData),
         })
             .then((response) => response.json())
             .then((data) => {
-                setUsuario(data); // Atualiza os dados do usuário
-                setEditando(false); // Sai do modo de edição
+                setUsuario(data.user); // O back-end retorna { message, user }
+                setEditando(false);
             })
             .catch((error) => console.error('Erro ao salvar os dados do usuário:', error));
     };
@@ -62,10 +68,10 @@ function Perfil() {
                     <>
                         <input
                             type="text"
-                            name="nome"
-                            value={formData.nome || ''}
+                            name="name"
+                            value={formData.name || ''}
                             onChange={handleChange}
-                            placeholder="Nome"
+                            placeholder="name"
                         />
                         <input
                             type="email"
@@ -82,16 +88,9 @@ function Perfil() {
                             placeholder="Renda"
                         />
                         <input
-                            type="password"
-                            name="senha"
-                            value={formData.senha || ''}
-                            onChange={handleChange}
-                            placeholder="Senha"
-                        />
-                        <input
                             type="number"
-                            name="diaRecebe"
-                            value={formData.diaRecebe || ''}
+                            name="dia"
+                            value={formData.dia || ''}
                             onChange={handleChange}
                             placeholder="Dia que recebe"
                         />
@@ -100,11 +99,10 @@ function Perfil() {
                 ) : (
                     // Exibição dos dados
                     <>
-                        <h3>Nome: {usuario.nome}</h3>
+                        <h3>name: {usuario.name}</h3>
                         <h3>Email: {usuario.email}</h3>
                         <h3>Renda: {usuario.renda}</h3>
-                        <h3>Senha: {usuario.senha}</h3>
-                        <h3>Dia que recebe: {usuario.diaRecebe}</h3>
+                        <h3>Dia que recebe: {usuario.dia}</h3>
                         <button onClick={handleEditar}>Editar</button>
                     </>
                 )}

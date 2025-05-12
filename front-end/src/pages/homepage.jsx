@@ -8,34 +8,53 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 function Homepage() {
     const [showModal, setShowModal] = useState(false);
-    const [usuario, setUsuario] = useState({ nome: '', diaRecebe: 15 }); // Adicione o dia de pagamento
-    const [categorias, setCategorias] = useState([
-        { nome: 'Dinheiro Disponível', valor: 1000 }, // Categoria inicial
-    ]);
-    const [diasParaPagamento, setDiasParaPagamento] = useState(0); // Estado para armazenar os dias restantes
+    const [usuario, setUsuario] = useState({ name: '', dia: '' });
+    const [categorias, setCategorias] = useState([]);
+    const [diasParaPagamento, setDiasParaPagamento] = useState(0);
     const navigate = useNavigate();
 
+    // Busca usuário e categorias ao carregar a página
     useEffect(() => {
-        const nomeUsuario = 'Lucas'; // Simula a obtenção do nome do usuário
-        const diaRecebe = 2; // Simula o dia de pagamento
-        setUsuario({ nome: nomeUsuario, diaRecebe });
+        const fetchUsuarioECategorias = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                // Busca dados do usuário
+                const responseUser = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+                if (responseUser.ok) {
+                    const dataUser = await responseUser.json();
+                    setUsuario({ name: dataUser.name, dia: dataUser.dia });
+                } else {
+                    navigate('/conta');
+                    return;
+                }
+                // Busca categorias do usuário
+                const responseCat = await fetch('/api/categories', {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+                if (responseCat.ok) {
+                    const dataCat = await responseCat.json();
+                    setCategorias(dataCat);
+                }
+            } catch (error) {
+                alert('Erro ao buscar dados do usuário ou categorias');
+            }
+        };
 
-        // Calcula os dias restantes para o pagamento
-        const hoje = new Date();
-        const diaAtual = hoje.getDate();
-        const mesAtual = hoje.getMonth();
-        const anoAtual = hoje.getFullYear();
+        fetchUsuarioECategorias();
+    }, [navigate]);
 
-        let diasRestantes;
-        if (diaRecebe >= diaAtual) {
-            diasRestantes = diaRecebe - diaAtual; // Pagamento ainda neste mês
-        } else {
-            const ultimoDiaDoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
-            diasRestantes = ultimoDiaDoMes - diaAtual + diaRecebe; // Pagamento no próximo mês
+    // Calcula os dias para o pagamento sempre que o usuário for carregado
+    useEffect(() => {
+        if (usuario.dia) {
+            const hoje = new Date();
+            const diaAtual = hoje.getDate();
+            let dias = usuario.dia - diaAtual;
+            if (dias < 0) dias += 30; // Ajuste simples para meses
+            setDiasParaPagamento(dias);
         }
-
-        setDiasParaPagamento(diasRestantes); // Atualiza o estado com os dias restantes
-    }, []);
+    }, [usuario]);
 
     const handleOpenModal = () => {
         setShowModal(true);
@@ -45,45 +64,79 @@ function Homepage() {
         setShowModal(false);
     };
 
-    const handleAdicionarCategoria = (e) => {
+    const handleAdicionarCategoria = async (e) => {
         e.preventDefault();
-        const nomeCategoria = e.target.nome.value;
+        const nameCategoria = e.target.name.value;
         const valorCategoria = parseFloat(e.target.valor.value);
 
-        if (!nomeCategoria || isNaN(valorCategoria) || valorCategoria <= 0) {
+        if (!nameCategoria || isNaN(valorCategoria) || valorCategoria <= 0) {
             alert('Por favor, insira um nome e um valor válido para a categoria.');
             return;
         }
 
-        setCategorias([...categorias, { nome: nomeCategoria, valor: valorCategoria }]);
-        setShowModal(false); // Fecha o modal após adicionar a categoria
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/categories', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ name: nameCategoria, value: valorCategoria }),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setCategorias([...categorias, data.category]);
+                setShowModal(false);
+            } else {
+                const data = await response.json();
+                alert(data.message || 'Erro ao adicionar categoria');
+            }
+        } catch (error) {
+            alert('Erro ao conectar com o servidor');
+        }
     };
 
     const perfil = () => {
         navigate('/perfil');
     };
 
-    const handleExcluirCategoria = (nomeCategoria) => {
-        const confirmacao = window.confirm(`Tem certeza que deseja excluir a categoria "${nomeCategoria}"?`);
-        if (confirmacao) {
-            setCategorias(categorias.filter((categoria) => categoria.nome !== nomeCategoria));
+    const handleExcluirCategoria = async (nameCategoria) => {
+        const categoria = categorias.find((cat) => cat.name === nameCategoria);
+        if (!categoria) return;
+        const confirmacao = window.confirm(`Tem certeza que deseja excluir a categoria "${nameCategoria}"?`);
+        if (!confirmacao) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/categories/${categoria._id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (response.ok) {
+                setCategorias(categorias.filter((cat) => cat._id !== categoria._id));
+            } else {
+                alert('Erro ao excluir categoria');
+            }
+        } catch (error) {
+            alert('Erro ao conectar com o servidor');
         }
     };
 
     // Dados do gráfico de pizza
     const data = {
-        labels: categorias.map((categoria) => categoria.nome),
+        labels: categorias.map((categoria) => categoria.name),
         datasets: [
             {
                 label: '',
-                data: categorias.map((categoria) => categoria.valor),
+                data: categorias.map((categoria) => categoria.value),
                 backgroundColor: [
-                    'black', // Vermelho
-                    '#36A2EB', // Azul
-                    '#FFCE56', // Amarelo
-                    '#4BC0C0', // Verde
-                    '#9966FF', // Roxo
-                    '#FF9F40', // Laranja
+                    'black',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF',
+                    '#FF9F40',
                 ],
                 hoverOffset: 4,
             },
@@ -93,19 +146,19 @@ function Homepage() {
     return (
         <div className="telas">
             <div className="Headerh">
-                <h1>Welcome {usuario.nome}</h1>
+                <h1>Welcome {usuario.name}</h1>
                 <button className="perfil-button" onClick={perfil}>Perfil</button>
             </div>
             <div className="tela">
                 <div className="left">
-                    <h2>Dias para receber o pagamento: {diasParaPagamento}</h2> {/* Exibe os dias restantes */}
+                    <h2>Dias para receber o pagamento: {diasParaPagamento}</h2>
                     <button type="button" onClick={handleOpenModal}>
                         Adicionar categoria
                     </button>
                     <button type="button" onClick={() => {
-                        const nomeCategoria = prompt('Digite o nome da categoria que deseja excluir:');
-                        if (nomeCategoria) {
-                            handleExcluirCategoria(nomeCategoria);
+                        const nameCategoria = prompt('Digite o nome da categoria que deseja excluir:');
+                        if (nameCategoria) {
+                            handleExcluirCategoria(nameCategoria);
                         }
                     }}>
                         Excluir categoria
@@ -122,7 +175,7 @@ function Homepage() {
                         <div className="modal-content">
                             <h2>Adicionar Categoria</h2>
                             <form onSubmit={handleAdicionarCategoria}>
-                                <input type="text" name="nome" placeholder="Nome da categoria" />
+                                <input type="text" name="name" placeholder="Nome da categoria" />
                                 <input type="number" name="valor" placeholder="Valor inicial" />
                                 <button type="submit">Salvar</button>
                                 <button type="button" onClick={handleCloseModal}>

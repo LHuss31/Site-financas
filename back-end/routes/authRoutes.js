@@ -116,6 +116,20 @@ router.post('/login', async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Erro ao fazer o login', error: error.message });
     }
+    
+});
+
+router.get('/me', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('name email renda dia');
+    if (!user) {
+      return res.status(404).json({ message: 'Usuário não encontrado!' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao buscar usuário', error: error.message });
+  }
+
 });
 
 router.put('/atualizar', authMiddleware, async (req, res) => {
@@ -138,4 +152,5 @@ router.put('/atualizar', authMiddleware, async (req, res) => {
       res.status(500).json({ message: 'Erro ao atualizar informações', error: error.message });
     }
   });
+  
   export default router;

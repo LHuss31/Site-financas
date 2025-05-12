@@ -3,7 +3,7 @@ import express from 'express';
 const router = express.Router();
 
 // Rota para listar todos os usuários
-router.get('/', (req, res) => {
+router.get('/lista', (req, res) => {
   res.json({ message: 'Lista de usuários' });
 });
 

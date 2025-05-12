@@ -3,20 +3,42 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Welcome(){
-    const [nome, setNome] = useState('');
+    const [name, setname] = useState('');
     const [renda, setRenda] = useState('');
     const [diarecebe, setDiaRecebe] = useState('');
     const navigate = useNavigate();
 
-    const Enviarinfo = (e) => {
+    const Enviarinfo = async (e) => {
         e.preventDefault();
         if(diarecebe > 31){
             alert('Dia que recebe o pagamento invalido!');
             return;
         }
-        console.log('Continue', {nome, renda, diarecebe});
-        navigate('/homepage');
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/auth/atualizar', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    name,
+                    renda: Number(renda),
+                    dia: Number(diarecebe),
+                }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                navigate('/homepage');
+            } else {
+                alert(data.message || 'Erro ao salvar informações');
+            }
+        } catch (error) {
+            alert('Erro ao conectar com o servidor');
+        }
     };
+
     return(
         <div className = "container2">
                 <div className = "Esquerda">
@@ -25,9 +47,9 @@ function Welcome(){
                 </div>
                 <div className = "Direita">
                     <form onSubmit = {Enviarinfo}>
-                    <input type = "text" placeholder = "Nome" value ={nome} onChange={(e) => setNome(e.target.value)}></input>
-                    <input type = "number" placeholder = "Quanto ganha por mês"value ={renda} onChange={(e) => setRenda(e.target.value)}></input>
-                    <input type = "number" placeholder = "Que dia Ganha no mês" value ={diarecebe} onChange={(e) => setDiaRecebe(e.target.value)}></input>
+                    <input type = "text" placeholder = "name" value ={name} onChange={(e) => setname(e.target.value)} />
+                    <input type = "number" placeholder = "Quanto ganha por mês" value ={renda} onChange={(e) => setRenda(e.target.value)} />
+                    <input type = "number" placeholder = "Que dia Ganha no mês" value ={diarecebe} onChange={(e) => setDiaRecebe(e.target.value)} />
                     <button type = "submit">Continue</button>
                     </form>
                 </div>
